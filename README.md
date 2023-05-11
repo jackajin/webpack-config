@@ -51,6 +51,26 @@ module.exports = {
   }
 }
 ```
+
+## mini-css-extract-plugin
+- 将css提取成.css文件
+```
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/
+        use: MiniCssExtractPlugin.loader
+      }
+    ]
+  },
+  plugins: [
+    MiniCssExtractPlugin({
+      filename: '[name]_['contenthash:8'].css'
+    })
+  ]
+}
+```
 ## file-loader url-loader
 - file-loader 解析图片，字体资源
 - url-loader 解析图片，字体资源, 可以设置小资源base64的转换
@@ -102,3 +122,78 @@ module.exports = {
  }
  ```
 
+ ##  webpack-dev-server WDS 热更新
+ ```
+  module.exports = {
+    mode: 'development',
+    plugins: [
+      new webpack.HotModuleReplacementPlugin()
+    ],
+    devServer: {
+      contentBase: './dist', // 服务的目录
+      hot: true
+    }
+  }
+ ```
+ ## webpack-dev-middleware
+- 热更新的原理
+webpack complile: 将js编译成Bundle
+HMR Server: 将热更新的文件传递给HMR runtime
+Bundle Server: 提供文件在浏览器访问
+HMR Runtime: 会被注入到浏览器，更新文件的变化
+bundle.js: 输出的js文件
+
+运行阶段: complile编译(注入HMR Runtime长链接的形式) --> 启动服务 
+
+文件更新： complile编译 --> HMR Server --> HMR Runtime(json格式传输) --> 更新页面
+
+## 文件指纹
+```
+module.exports = {
+  output: {
+    path: path.join(__dirname, 'dist'),
+    filename: '[name]_[chunckhash:8].js'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(png | jpj | jpej | gif)$/,
+        use: [{
+            loader: 'ure-loader',
+            option: {
+              limit: 10240, // 10k
+              name: '[name]_[hash:8][ext]'
+            }
+          }]
+      }
+    ]
+  },
+}
+```
+## 代码压缩
+- js webpack内置  uglifyjs-webpack-plugin
+
+- css optimize-css-assets-webpack-plugin cssnano
+```
+  module.exports = {
+    plugin: [
+      new OptimizeCssAssetsPlugin({
+        assetNameRegExp: /\.css$/g,
+        cssProcessor: require('cssnano')
+      })
+    ]
+  }
+```
+- html html-webpack-plugin
+```
+module.exports = {
+  plugin: [
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'index.html'), // 模版的目录
+      filename: 'index.html', // 输出的名字
+      chunks: [''], // 指定html要使用的chunks
+      inject: true, // 为true会把打包的js，css自动注入到html里面
+    })
+  ]
+}
+```
